@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おみくじアプリ</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .omikuji-box {
+            background: #f8f9fa;
+            border: 3px solid #dee2e6;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .fortune-level {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .daikichi { background: #28a745; }
+        .kichi { background: #17a2b8; }
+        .chukichi { background: #ffc107; color: #333; text-shadow: none; }
+        .shokichi { background: #fd7e14; }
+        .kyo { background: #dc3545; }
+
+        .fortune-message {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        .draw-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .draw-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .draw-button:active {
+            transform: translateY(0);
+        }
+
+        .initial-message {
+            color: #666;
+            font-size: 1.2em;
+            font-style: italic;
+        }
+
+        .date {
+            margin-top: 20px;
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fortune-result {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎋 おみくじ 🎋</h1>
+
+        <div class="omikuji-box" id="fortuneBox">
+            <div class="initial-message">
+                ボタンを押しておみくじを引いてください
+            </div>
+        </div>
+
+        <button class="draw-button" onclick="drawFortune()">
+            おみくじを引く
+        </button>
+
+        <div class="date" id="currentDate"></div>
+    </div>
+
+    <script>
+        // おみくじの結果データ
+        const fortunes = [
+            {
+                level: "大吉",
+                class: "daikichi",
+                messages: [
+                    "素晴らしい一日になるでしょう。新しいことに挑戦してみてください。",
+                    "幸運があなたを待っています。積極的に行動しましょう。",
+                    "今日は特別な日です。大切な人との時間を大切にしてください。"
+                ]
+            },
+            {
+                level: "吉",
+                class: "kichi",
+                messages: [
+                    "良いことが起こりそうです。笑顔を忘れずに過ごしましょう。",
+                    "穏やかな一日になるでしょう。周りの人に感謝の気持ちを伝えてください。",
+                    "小さな幸せを見つけられる日です。身の回りに注意を向けてみてください。"
+                ]
+            },
+            {
+                level: "中吉",
+                class: "chukichi",
+                messages: [
+                    "まずまずの運勢です。焦らずゆっくりと進みましょう。",
+                    "安定した一日になりそうです。計画を立てて行動してください。",
+                    "努力が実を結ぶ時期です。継続することが大切です。"
+                ]
+            },
+            {
+                level: "小吉",
+                class: "shokichi",
+                messages: [
+                    "小さな幸せが見つかるかもしれません。細かいことに気を配りましょう。",
+                    "慎重に行動すれば良い結果が得られるでしょう。",
+                    "今日は学びの日です。新しい知識を身につけてみてください。"
+                ]
+            },
+            {
+                level: "凶",
+                class: "kyo",
+                messages: [
+                    "今日は慎重に行動しましょう。無理をせず、休息も大切です。",
+                    "困難があっても諦めずに。明日はきっと良い日になります。",
+                    "今は準備の時期です。次のチャンスに備えて力を蓄えましょう。"
+                ]
+            }
+        ];
+
+        function drawFortune() {
+            // ランダムにおみくじを選択
+            const randomIndex = Math.floor(Math.random() * fortunes.length);
+            const selectedFortune = fortunes[randomIndex];
+
+            // メッセージもランダムに選択
+            const messageIndex = Math.floor(Math.random() * selectedFortune.messages.length);
+            const selectedMessage = selectedFortune.messages[messageIndex];
+
+            // 結果を表示
+            const fortuneBox = document.getElementById('fortuneBox');
+            fortuneBox.innerHTML = `
+                <div class="fortune-result">
+                    <div class="fortune-level ${selectedFortune.class}">
+                        ${selectedFortune.level}
+                    </div>
+                    <div class="fortune-message">
+                        ${selectedMessage}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 現在の日付を表示
+        function displayCurrentDate() {
+            const now = new Date();
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            };
+            const dateString = now.toLocaleDateString('ja-JP', options);
+            document.getElementById('currentDate').textContent = dateString;
+        }
+
+        // ページ読み込み時に日付を表示
+        window.onload = function() {
+            displayCurrentDate();
+        };
+    </script>
+</body>
+</html>

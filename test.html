@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おみくじアプリ テスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .pass { background-color: #d4edda; color: #155724; }
+        .fail { background-color: #f8d7da; color: #721c24; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>おみくじアプリ テスト</h1>
+        <div id="testResults"></div>
+        <button onclick="runTests()">テストを実行</button>
+        <button onclick="runMultipleDraws()">複数回テスト (10回)</button>
+    </div>
+
+    <script>
+        // おみくじの結果データ（メインアプリと同じ）
+        const fortunes = [
+            {
+                level: "大吉",
+                class: "daikichi",
+                messages: [
+                    "素晴らしい一日になるでしょう。新しいことに挑戦してみてください。",
+                    "幸運があなたを待っています。積極的に行動しましょう。",
+                    "今日は特別な日です。大切な人との時間を大切にしてください。"
+                ]
+            },
+            {
+                level: "吉",
+                class: "kichi",
+                messages: [
+                    "良いことが起こりそうです。笑顔を忘れずに過ごしましょう。",
+                    "穏やかな一日になるでしょう。周りの人に感謝の気持ちを伝えてください。",
+                    "小さな幸せを見つけられる日です。身の回りに注意を向けてみてください。"
+                ]
+            },
+            {
+                level: "中吉",
+                class: "chukichi",
+                messages: [
+                    "まずまずの運勢です。焦らずゆっくりと進みましょう。",
+                    "安定した一日になりそうです。計画を立てて行動してください。",
+                    "努力が実を結ぶ時期です。継続することが大切です。"
+                ]
+            },
+            {
+                level: "小吉",
+                class: "shokichi",
+                messages: [
+                    "小さな幸せが見つかるかもしれません。細かいことに気を配りましょう。",
+                    "慎重に行動すれば良い結果が得られるでしょう。",
+                    "今日は学びの日です。新しい知識を身につけてみてください。"
+                ]
+            },
+            {
+                level: "凶",
+                class: "kyo",
+                messages: [
+                    "今日は慎重に行動しましょう。無理をせず、休息も大切です。",
+                    "困難があっても諦めずに。明日はきっと良い日になります。",
+                    "今は準備の時期です。次のチャンスに備えて力を蓄えましょう。"
+                ]
+            }
+        ];
+
+        function drawFortune() {
+            const randomIndex = Math.floor(Math.random() * fortunes.length);
+            const selectedFortune = fortunes[randomIndex];
+            const messageIndex = Math.floor(Math.random() * selectedFortune.messages.length);
+            const selectedMessage = selectedFortune.messages[messageIndex];
+
+            return {
+                level: selectedFortune.level,
+                class: selectedFortune.class,
+                message: selectedMessage
+            };
+        }
+
+        function runTests() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<h2>テスト結果</h2>';
+
+            let passCount = 0;
+            let totalTests = 0;
+
+            // テスト1: おみくじが正常に引けるか
+            totalTests++;
+            try {
+                const result = drawFortune();
+                if (result && result.level && result.class && result.message) {
+                    results.innerHTML += '<div class="test-result pass">✓ テスト1: おみくじが正常に引けました</div>';
+                    passCount++;
+                } else {
+                    results.innerHTML += '<div class="test-result fail">✗ テスト1: おみくじの結果が不完全です</div>';
+                }
+            } catch (error) {
+                results.innerHTML += '<div class="test-result fail">✗ テスト1: エラーが発生しました - ' + error.message + '</div>';
+            }
+
+            // テスト2: 全ての運勢レベルが存在するか
+            totalTests++;
+            const expectedLevels = ["大吉", "吉", "中吉", "小吉", "凶"];
+            const actualLevels = fortunes.map(f => f.level);
+            const hasAllLevels = expectedLevels.every(level => actualLevels.includes(level));
+
+            if (hasAllLevels) {
+                results.innerHTML += '<div class="test-result pass">✓ テスト2: 全ての運勢レベルが定義されています</div>';
+                passCount++;
+            } else {
+                results.innerHTML += '<div class="test-result fail">✗ テスト2: 運勢レベルが不足しています</div>';
+            }
+
+            // テスト3: 各運勢にメッセージが存在するか
+            totalTests++;
+            const hasMessages = fortunes.every(fortune =>
+                fortune.messages && fortune.messages.length > 0
+            );
+
+            if (hasMessages) {
+                results.innerHTML += '<div class="test-result pass">✓ テスト3: 全ての運勢にメッセージが設定されています</div>';
+                passCount++;
+            } else {
+                results.innerHTML += '<div class="test-result fail">✗ テスト3: メッセージが不足している運勢があります</div>';
+            }
+
+            // テスト4: ランダム性のテスト（100回実行して全て同じ結果でないか）
+            totalTests++;
+            const results100 = [];
+            for (let i = 0; i < 100; i++) {
+                results100.push(drawFortune().level);
+            }
+            const uniqueResults = [...new Set(results100)];
+
+            if (uniqueResults.length > 1) {
+                results.innerHTML += '<div class="test-result pass">✓ テスト4: ランダム性が確認されました (' + uniqueResults.length + '種類の結果)</div>';
+                passCount++;
+            } else {
+                results.innerHTML += '<div class="test-result fail">✗ テスト4: ランダム性に問題があります</div>';
+            }
+
+            // 結果サマリー
+            results.innerHTML += `<div style="margin-top: 20px; font-weight: bold;">
+                テスト結果: ${passCount}/${totalTests} 通過
+            </div>`;
+        }
+
+        function runMultipleDraws() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<h2>複数回テスト結果</h2>';
+
+            const drawResults = {};
+            for (let i = 0; i < 10; i++) {
+                const result = drawFortune();
+                results.innerHTML += `<div class="test-result pass">
+                    ${i + 1}回目: ${result.level} - ${result.message}
+                </div>`;
+
+                drawResults[result.level] = (drawResults[result.level] || 0) + 1;
+            }
+
+            results.innerHTML += '<h3>運勢の分布:</h3>';
+            for (const [level, count] of Object.entries(drawResults)) {
+                results.innerHTML += `<div>${level}: ${count}回</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
