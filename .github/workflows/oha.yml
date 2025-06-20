@@ -17,4 +17,9 @@ jobs:
       - uses: all-hands-ai/openhands-resolver@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          api-key: ${{ secrets.OPENAI_API_KEY }}
+          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+        env:
+          LLM_MODEL: "anthropic/claude-3-5-sonnet-20241022"
+          OPENHANDS_MAX_ITER: 10
+          OPENHANDS_MACRO: "@resolveit"
+          TARGET_BRANCH: "main"
